@@ -1,4 +1,4 @@
-# $$DÓJA — Institutional Art & Finance$$
+# DÓJA — Institutional Art & Finance
 
 > L'intersezione tra arte e capitale.
 
