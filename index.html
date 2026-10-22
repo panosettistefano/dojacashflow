@@ -39,6 +39,8 @@
         .glass-nav { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.1); z-index: 1000; }
         .dark .glass-card { background: rgba(15, 17, 19, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); }
         .light .glass-card { background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+        /* Login card: sempre grigia (scura), indipendente dal tema chiaro/scuro */
+        #login-card { background: linear-gradient(145deg, rgba(38, 41, 46, 0.92), rgba(22, 24, 27, 0.94)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 30px 80px -30px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.04); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
         .glass-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; }
         .light .glass-input { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); color: black; }
 
@@ -58,7 +60,7 @@
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
 
         #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 20000; display: flex; flex-direction: column; gap: 1rem; pointer-events: none; }
-        .toast { background: rgba(5, 6, 7, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 1rem 1.5rem; border-radius: 1rem; color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(100%); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto; display: flex; items-center: center; gap: 0.8rem; }
+        .toast { background: rgba(5, 6, 7, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 1rem 1.5rem; border-radius: 1rem; color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(100%); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto; display: flex; align-items: center; gap: 0.8rem; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-left: 4px solid #EF9B0F; }
         .toast.error { border-left: 4px solid #B35A44; }
@@ -359,9 +361,9 @@
     <script>
         // --- DATA MANAGER & STATE ---
         const DEFAULT_ASSETS = [
-            { id: 1, artist: "Vincent Van Gogh", title: "Starry Night", price: 4500000, desc: "Acquisizione strategica del 2023. Conservata in caveau climatizzato di Livello 5.", year: "1889", status: "In Vault", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg" },
-            { id: 2, artist: "Salvador Dalì", title: "Temptation", price: 1280000, desc: "Rarità assoluta del surrealismo. Provenienza garantita da archivio ufficiale Dalì.", year: "1946", status: "Exhibited", img: "https://wahooart.com/media/artworks/images/full/24/47/2447e18405b84db99fcf4c89b65e0555.Jpg" },
-            { id: 3, artist: "Antonio Ligabue", title: "Tigre Reale", price: 890000, desc: "Il capolavoro dell'espressionismo italiano selvaggio. Acquistato presso Sotheby's.", year: "1953", status: "In Vault", img: "https://gallery.artsupp.com/partners_artworks_pictures/full/3761.jpg" }
+            { id: 1, artist: "Vincent Van Gogh", title: "Starry Night", price: 4500000, desc: "Acquisizione strategica del 2023. Conservata in caveau climatizzato di Livello 5.", year: "1889", status: "In Vault", img: "img/StarryNight.jpg" },
+            { id: 2, artist: "Salvador Dalì", title: "Temptation", price: 1280000, desc: "Rarità assoluta del surrealismo. Provenienza garantita da archivio ufficiale Dalì.", year: "1946", status: "Exhibited", img: "img/dali.jpg" },
+            { id: 3, artist: "Antonio Ligabue", title: "Tigre Reale", price: 890000, desc: "Il capolavoro dell'espressionismo italiano selvaggio. Acquistato presso Sotheby's.", year: "1953", status: "In Vault", img: "img/LIgabue.jpg" }
         ];
 
         let state = {
@@ -406,6 +408,13 @@
             const saved = localStorage.getItem('doja_data');
             if (saved) {
                 state = { ...state, ...JSON.parse(saved) };
+                // Migrazione: i salvataggi vecchi puntano a URL remoti non più validi.
+                // Rimappa gli asset di default ai file locali in img/.
+                const savedAssets = Array.isArray(state.assets) ? state.assets : DEFAULT_ASSETS;
+                state.assets = savedAssets.map(a => {
+                    const def = DEFAULT_ASSETS.find(d => d.id === a.id || d.title === a.title);
+                    return def ? { ...a, img: def.img } : a;
+                });
             } else {
                 state.assets = DEFAULT_ASSETS;
             }
